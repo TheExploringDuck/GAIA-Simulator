@@ -46,6 +46,14 @@ class World:
     plant_growth: float = 0.0
     plant_dieback: float = 0.0
     forage_yield: float = 0.0
+    preservation_effort: float = 0.0
+    cultivation_effort: float = 0.0
+    foraging_effort: float = 0.0
+    cultivation_contributors: int = 0
+    foraging_contributors: int = 0
+    mean_cultivation_aptitude: float = 0.0
+    mean_foraging_aptitude: float = 0.0
+    mean_cultivation_share: float = 0.0
 
     @classmethod
     def create(cls, config):

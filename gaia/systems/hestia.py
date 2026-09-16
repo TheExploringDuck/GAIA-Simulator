@@ -11,6 +11,7 @@ class Hestia:
         if not sim.population or not c.hestia_enabled:
             w.preservation = 0.0
             w.preservation_workers = 0
+            w.preservation_effort = 0.0
             w.estimated_food_supply = 0.0
             w.estimated_carrying_capacity = 0.0
             w.birth_policy = 1.0
@@ -21,6 +22,7 @@ class Hestia:
         if food_need == 0 and water_need == 0:
             w.preservation = 0.0
             w.preservation_workers = 0
+            w.preservation_effort = 0.0
             w.estimated_food_supply = 0.0
             w.estimated_carrying_capacity = float(len(sim.population))
             w.birth_policy = 1.0
@@ -29,7 +31,11 @@ class Hestia:
         water_days = w.water / water_need if water_need else 0.0
         reserve_signal = min(1.0, food_days / c.preservation_food_days)
         w.preservation = c.preservation_max * reserve_signal
-        w.preservation_workers = min(len(sim.population), round(len(sim.population) * c.preservation_labor_fraction * reserve_signal))
+        # Preservation is a small shared practice, not a group permanently
+        # assigned away from other life. It reduces every inhabitant's usable
+        # work capacity by the same fraction.
+        w.preservation_effort = c.preservation_labor_fraction * reserve_signal
+        w.preservation_workers = 0
 
         # Include the production that already occurred this tick. Hestia used
         # to assess only an old history window before today's harvest, which

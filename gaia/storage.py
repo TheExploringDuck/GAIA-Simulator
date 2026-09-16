@@ -15,7 +15,7 @@ from .events import validate_event
 
 
 def checkpoint(sim):
-    return {"schema_version": 4, "config": sim.config.to_dict(), "world": asdict(sim.world),
+    return {"schema_version": 5, "config": sim.config.to_dict(), "world": asdict(sim.world),
             "population": [asdict(p) for p in sim.population], "next_id": sim.next_id,
             "pollinators": [asdict(p) for p in sim.pollinators], "grazers": [asdict(p) for p in sim.grazers],
             "next_creature_id": sim.next_creature_id, "scheduled_events": sim.scheduled_events,
@@ -29,7 +29,7 @@ def _tuples(value):
 
 def restore(data):
     try:
-        if data.get("schema_version") not in {1, 2, 3, 4}:
+        if data.get("schema_version") not in {1, 2, 3, 4, 5}:
             raise ValueError("Unsupported checkpoint version")
         # Reject NaN/Infinity throughout, including history and random state.
         json.dumps(data, allow_nan=False)
@@ -62,6 +62,9 @@ def restore(data):
                 raise ValueError("Invalid inhabitant state")
             if any(type(v) is not int for v in (p.age, p.generation, p.cooldown, p.offspring, p.identifier)):
                 raise ValueError("Invalid inhabitant counters")
+            if (not all(isinstance(v, (int, float)) and math.isfinite(v) and 0 <= v <= 1
+                        for v in (p.cultivation_memory, p.foraging_memory, p.last_cultivation_share))):
+                raise ValueError("Invalid inhabitant strategy state")
         ids = [p.identifier for p in sim.population]
         sim.next_id = data["next_id"]
         if type(sim.next_id) is not int or sim.next_id <= max(ids, default=-1) or len(ids) != len(set(ids)):

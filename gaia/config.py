@@ -44,10 +44,14 @@ class Config:
     farm_land: float = 0.65
     farm_yield: float = 90.0
     farm_water_cost: float = 0.30
-    farm_labor_fraction: float = 0.32
-    farm_labor_half_saturation: float = 8.0
+    # Inhabitants allocate this general work capacity adaptively; Gaia no
+    # longer begins by assigning farmer and forager roles.
+    work_intensity: float = 0.82
+    scarcity_work_response: float = 0.12
+    effort_half_saturation: float = 8.0
     farm_pollution_per_food: float = 0.006
-    farm_reproduction_cost: float = 0.35
+    work_reproduction_cost: float = 0.25
+    strategy_learning_rate: float = 0.08
     hestia_enabled: bool = True
     preservation_labor_fraction: float = 0.08
     preservation_max: float = 0.65
@@ -131,7 +135,7 @@ class Config:
                 raise ValueError(f"{field.name} cannot be negative")
         for name in ("water_capacity", "food_capacity", "wild_food_capacity", "reservoir_capacity", "plant_biomass_capacity", "seed_bank_capacity", "season_length",
                      "max_age", "max_population", "poseidon_interval", "thor_interval", "governance_interval",
-                     "capacity_window", "feedback_window", "pollinator_pressure_scale", "pollinator_effect_scale", "grazer_pressure_scale", "pollinator_maturity_age",
+                     "capacity_window", "feedback_window", "effort_half_saturation", "pollinator_pressure_scale", "pollinator_effect_scale", "grazer_pressure_scale", "pollinator_maturity_age",
                      "pollinator_max_age", "grazer_maturity_age", "grazer_max_age"):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} must be positive")
@@ -139,7 +143,7 @@ class Config:
             raise ValueError("observation_window must be at least 20")
         for name in ("initial_fertility", "rainfall_variability", "evaporation", "food_decay",
                      "pollution_decay", "fertility_recovery", "birth_probability", "mutation_rate", "stability_tolerance", "plant_water_cost", "flowering_fraction", "seed_yield", "seed_decay", "forage_from_growth", "plant_dieback", "plant_pollution_sensitivity",
-                     "farm_land", "farm_labor_fraction", "farm_reproduction_cost", "preservation_labor_fraction",
+                     "farm_land", "work_intensity", "scarcity_work_response", "work_reproduction_cost", "strategy_learning_rate", "preservation_labor_fraction",
                      "preservation_max", "capacity_birth_floor", "capacity_birth_surplus", "pollinator_growth", "pollinator_pollution_sensitivity",
                      "pollination_bonus_max", "pollinator_birth_probability", "pollinator_starvation_damage", "pollinator_adaptation_strength", "pollinator_adaptation_mutation",
                      "grazer_density_stress", "grazer_adaptation_strength", "grazer_adaptation_mutation",
@@ -165,6 +169,18 @@ class Config:
         if not isinstance(values, dict):
             raise ValueError("Configuration must be a JSON object")
         values = dict(values)
+        # Earlier versions prescribed a settlement-wide farmer fraction.
+        # Preserve old experiments by translating it to neutral total work
+        # capacity; individual allocation is now adaptive.
+        if "farm_labor_fraction" in values:
+            values.setdefault("work_intensity", min(1.0, values["farm_labor_fraction"] + 0.30))
+            values.pop("farm_labor_fraction")
+        if "farm_labor_half_saturation" in values:
+            values.setdefault("effort_half_saturation", values["farm_labor_half_saturation"])
+            values.pop("farm_labor_half_saturation")
+        if "farm_reproduction_cost" in values:
+            values.setdefault("work_reproduction_cost", values["farm_reproduction_cost"])
+            values.pop("farm_reproduction_cost")
         # Pre-0.1.1 saves used hard animal capacities. Preserve their numeric
         # intent as the density scale after removing those ceilings.
         if "pollinator_capacity" in values:

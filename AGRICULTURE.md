@@ -2,7 +2,7 @@
 
 Gaia now has a real plant layer. **Chloris** tracks `plant_biomass`, a `seed_bank`, seasonal `flowering_biomass`, plant growth and dieback, and `forage_yield`. Seeds, soil fertility, accessible water, season, pollution, and prior pollination determine vegetation growth. Flowers support pollinators; pollination replenishes seeds; plant growth creates the separate, finite `wild_food` forage stock. Grazers consume vegetation, while inhabitants must forage edible wild food into the `food` pantry.
 
-**Demeter** assigns people between farming and foraging. In feedback mode, a low pantry shifts more people toward farms; it always preserves some foragers. Farm production depends on cultivated land, a diminishing-return labor curve, water, soil fertility, and pollution. A harvest consumes water, reduces fertility, and adds a small pollution cost.
+**Demeter** does not assign people permanent farming or foraging roles. Each inhabitant divides a finite amount of effort between cultivation and foraging according to inherited aptitude, the payoff they recently experienced, and the food, soil, water, and forage now available. The inherited aptitude traits recombine and mutate across generations, so the settlement’s collective behavior can evolve without a role being prescribed in advance. Farm production still depends on cultivated land, a diminishing-return effort curve, water, soil fertility, and pollution. A harvest consumes water, reduces fertility, and adds a small pollution cost.
 
 Agriculture is connected to the rest of the world:
 
@@ -14,7 +14,7 @@ rain + reservoir → accessible water → vegetation → flowers → pollinators
                               soil fertility ← recovery / depletion ← labor, pollution
 ```
 
-Farm labor also competes with cleanup and reproduction. This makes an abundant food period capable of producing growth, but prevents food production from being a free resource injection.
+Adaptive food effort affects reproduction, while cleanup is a shared contribution across the settlement. This lets the world express a real tradeoff between food production, pollution, and population growth without converting anyone into a permanent cleanup role.
 
 **Hestia** adds settlement stewardship. She allocates a small amount of labor to food preservation, reducing pantry spoilage, and estimates carrying capacity from recent harvests. Below the configured capacity floor she closes births; near the estimated limit she permits only low replacement pressure; durable reserves and a surplus permit growth.
 

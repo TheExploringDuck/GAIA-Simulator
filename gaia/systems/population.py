@@ -36,8 +36,8 @@ class Population:
         children = []
         if w.shortage < 0.05:
             for first, second in zip(eligible[::2], eligible[1::2]):
-                farm_burden = (w.farm_workers + w.preservation_workers) / len(survivors) if survivors else 0.0
-                probability = c.birth_probability * (first.fecundity + second.fecundity) / 2 * (1 - w.cleanup * 0.45) * (1 - farm_burden * c.farm_reproduction_cost) * w.birth_policy
+                work_burden = (w.cultivation_effort + w.foraging_effort) / len(survivors) + w.preservation_effort if survivors else 0.0
+                probability = c.birth_probability * (first.fecundity + second.fecundity) / 2 * (1 - w.cleanup * 0.45) * (1 - work_burden * c.work_reproduction_cost) * w.birth_policy
                 if sim.life_rng.random() >= probability:
                     continue
                 if len(survivors) + len(children) >= c.max_population:

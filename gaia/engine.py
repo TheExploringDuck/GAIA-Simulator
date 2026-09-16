@@ -120,7 +120,7 @@ class Simulation:
                    mean_water_demand=mean(p.water_demand for p in self.population) if self.population else 0,
                    mean_tolerance=mean(p.tolerance for p in self.population) if self.population else 0,
                    max_generation=max((p.generation for p in self.population), default=0),
-                   farm_labor_fraction=self.world.farm_workers / len(self.population) if self.population else 0,
+                   farm_labor_fraction=self.world.cultivation_effort / len(self.population) if self.population else 0,
                    mean_farmer_skill=self.world.mean_farmer_skill, mean_forager_skill=self.world.mean_forager_skill)
         self.history.append(row)
 
@@ -133,6 +133,9 @@ class Simulation:
         return {"config": self.config.to_dict(), "current": self.history[-1], "summary": summarize(self),
                 "history": sampled, "events": self.events[-50:],
                 "inhabitants": [dict(name=p.name, age=p.age, health=p.health, generation=p.generation,
-                                     offspring=p.offspring, genome=p.genome) for p in self.population[:30]],
+                                     offspring=p.offspring, genome=p.genome,
+                                     cultivation_aptitude=p.cultivation_aptitude,
+                                     foraging_aptitude=p.foraging_aptitude,
+                                     cultivation_share=p.last_cultivation_share) for p in self.population[:30]],
                 "species": {"pollinators": len(self.pollinators), "grazers": len(self.grazers)},
                 "scheduled_events": self.scheduled_events}

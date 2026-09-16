@@ -93,6 +93,19 @@ class SimulationTests(unittest.TestCase):
         dry = Simulation(Config(**{**config.to_dict(), "initial_water": 0})).step(1)
         self.assertEqual(dry.world.farm_harvest, 0)
 
+    def test_inhabitants_adapt_effort_without_assigned_roles(self):
+        sim = Simulation(Config(initial_population=0, initial_pollinators=0, initial_grazers=0))
+        cultivator = Organism(1, [5, 5, 5, 5, 5, 5, 10, 10, 0, 0])
+        forager = Organism(2, [5, 5, 5, 5, 5, 5, 0, 0, 10, 10])
+        sim.population = [cultivator, forager]
+        sim.next_id = 3
+        sim.step(1)
+        self.assertGreater(cultivator.last_cultivation_share, forager.last_cultivation_share)
+        self.assertGreater(sim.world.cultivation_effort, 0)
+        self.assertGreater(sim.world.foraging_effort, 0)
+        self.assertEqual(sim.world.cultivation_contributors, 2)
+        self.assertEqual(sim.world.foraging_contributors, 2)
+
     def test_foraging_depletes_a_finite_wild_stock(self):
         config = Config(initial_population=8, initial_food=0, initial_wild_food=5, food_growth=0,
                         demeter_enabled=False, thor_enabled=False, rainfall=0, initial_reservoir=0, initial_grazers=0)
@@ -185,6 +198,13 @@ class SimulationTests(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 Config.from_dict(changes)
 
+    def test_legacy_role_parameters_migrate_to_adaptive_effort(self):
+        config = Config.from_dict({"farm_labor_fraction": 0.32, "farm_labor_half_saturation": 8,
+                                   "farm_reproduction_cost": 0.35})
+        self.assertAlmostEqual(config.work_intensity, 0.62)
+        self.assertEqual(config.effort_half_saturation, 8)
+        self.assertAlmostEqual(config.work_reproduction_cost, 0.35)
+
     def test_invalid_checkpoint_is_rejected(self):
         data = checkpoint(Simulation())
         data["population"][0]["genome"][0] = 99
@@ -197,6 +217,10 @@ class SimulationTests(unittest.TestCase):
         data.pop("pollinators")
         data.pop("grazers")
         data.pop("next_creature_id")
+        for person in data["population"]:
+            person.pop("cultivation_memory")
+            person.pop("foraging_memory")
+            person.pop("last_cultivation_share")
         for key in ("pollinator_count", "grazer_count", "pollination_bonus", "livestock_food",
                     "grazer_births", "grazer_deaths", "mean_farmer_skill", "mean_forager_skill"):
             data["world"].pop(key, None)

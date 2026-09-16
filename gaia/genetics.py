@@ -12,6 +12,9 @@ class Organism:
     generation: int = 0
     cooldown: int = 0
     offspring: int = 0
+    cultivation_memory: float = 0.5
+    foraging_memory: float = 0.5
+    last_cultivation_share: float = 0.5
 
     @property
     def name(self):
@@ -42,14 +45,23 @@ class Organism:
         return 0.75 + 0.5 * self.pair(8)
 
     @property
-    def agriculture_skill(self):
-        """A heritable farm-work multiplier; it does not guarantee survival."""
+    def cultivation_aptitude(self):
+        """Inherited effectiveness at converting effort into farm output."""
         return 0.65 + 0.7 * self.pair(6)
 
     @property
-    def foraging_skill(self):
-        """A heritable ability to locate and harvest wild food."""
+    def foraging_aptitude(self):
+        """Inherited effectiveness at locating and harvesting wild food."""
         return 0.65 + 0.7 * self.pair(8)
+
+    # Compatibility names for older reports and saved analysis scripts.
+    @property
+    def agriculture_skill(self):
+        return self.cultivation_aptitude
+
+    @property
+    def foraging_skill(self):
+        return self.foraging_aptitude
 
 
 @dataclass
